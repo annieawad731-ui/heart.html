@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Heart Animation</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        canvas {
+            background-color: black;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="heartCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById("heartCanvas");
+        const ctx = canvas.getContext("2d");
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        // Set initial size
+        resizeCanvas();
+
+        // Recalculate if the user resizes the window or rotates their phone
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initAnimation();
+        });
+
+        let points = [];
+        let currentIndex = 0;
+        let animationId;
+
+        function initAnimation() {
+            cancelAnimationFrame(animationId);
+            points = [];
+            currentIndex = 0;
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            // Dynamically adjust the size multiplier based on the screen width
+            // This ensures it shrinks on mobile and grows on larger screens
+            const baseScaleFactor = Math.min(canvas.width, canvas.height) / 350;
+
+            for (let scale = 11; scale < 17; scale += 1.5) {
+                for (let i = 0; i < 120; i++) {
+                    let angle = i * (Math.PI * 2) / 120;
+                    
+                    let x = 16 * Math.pow(Math.sin(angle), 3) * scale;
+                    let y = (13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * scale;
+                    
+                    let drawX = centerX + x * baseScaleFactor;
+                    let drawY = centerY - y * baseScaleFactor;
+
+                    points.push({ x: drawX, y: drawY });
+                }
+            }
+
+            animateHeart();
+        }
+
+        function animateHeart() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw all points up to the current index
+            let step = 4;
+            if (currentIndex < points.length) {
+                currentIndex = Math.min(currentIndex + step, points.length);
+            }
+
+            for (let j = 0; j < currentIndex; j++) {
+                let p = points[j];
+                ctx.fillStyle = "#ffb6c1";
+                // Scale text size slightly for smaller screens
+                let fontSize = Math.max(7, Math.floor(canvas.width / 120));
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.textAlign = "center";
+                ctx.fillText("I love you", p.x, p.y);
+            }
+
+            if (currentIndex < points.length) {
+                animationId = requestAnimationFrame(animateHeart);
+            }
+        }
+
+        // Start animation on load
+        initAnimation();
+    </script>
+</body>
+</html>
